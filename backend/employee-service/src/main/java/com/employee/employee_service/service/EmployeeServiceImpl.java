@@ -1,6 +1,9 @@
 package com.employee.employee_service.service;
 
+import com.employee.employee_service.dto.EmployeeRequest;
+import com.employee.employee_service.dto.EmployeeResponse;
 import com.employee.employee_service.entity.Employee;
+import com.employee.employee_service.exception.EmployeeNotFoundException;
 import com.employee.employee_service.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,41 +19,86 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Employee createEmployee(Employee employee) {
-        return employeeRepository.save(employee);
+    public EmployeeResponse createEmployee(EmployeeRequest request) {
+
+        Employee employee = new Employee();
+
+        employee.setName(request.getName());
+        employee.setEmail(request.getEmail());
+        employee.setDepartment(request.getDepartment());
+        employee.setDesignation(request.getDesignation());
+        employee.setSalary(request.getSalary());
+
+        Employee savedEmployee = employeeRepository.save(employee);
+
+        return mapToResponse(savedEmployee);
     }
 
     @Override
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+    public List<EmployeeResponse> getAllEmployees() {
+
+        return employeeRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @Override
-    public Employee getEmployeeById(Long id) {
-        return employeeRepository.findById(id)
+    public EmployeeResponse getEmployeeById(Long id) {
+
+        Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Employee not found: " + id));
+                         new EmployeeNotFoundException(
+                "Employee not found: " + id
+        ));
+
+        return mapToResponse(employee);
     }
 
     @Override
-    public Employee updateEmployee(Long id, Employee employee) {
+    public EmployeeResponse updateEmployee(
+            Long id,
+            EmployeeRequest request) {
 
-        Employee existingEmployee = getEmployeeById(id);
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                                "Employee not found: " + id
+                        ));
 
-        existingEmployee.setName(employee.getName());
-        existingEmployee.setEmail(employee.getEmail());
-        existingEmployee.setDepartment(employee.getDepartment());
-        existingEmployee.setDesignation(employee.getDesignation());
-        existingEmployee.setSalary(employee.getSalary());
+        employee.setName(request.getName());
+        employee.setEmail(request.getEmail());
+        employee.setDepartment(request.getDepartment());
+        employee.setDesignation(request.getDesignation());
+        employee.setSalary(request.getSalary());
 
-        return employeeRepository.save(existingEmployee);
+        Employee updatedEmployee =
+                employeeRepository.save(employee);
+
+        return mapToResponse(updatedEmployee);
     }
 
     @Override
     public void deleteEmployee(Long id) {
 
-        Employee existingEmployee = getEmployeeById(id);
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                "Employee not found: " + id
+        ));
 
-        employeeRepository.delete(existingEmployee);
+        employeeRepository.delete(employee);
+    }
+
+    private EmployeeResponse mapToResponse(Employee employee) {
+
+        return new EmployeeResponse(
+                employee.getId(),
+                employee.getName(),
+                employee.getEmail(),
+                employee.getDepartment(),
+                employee.getDesignation(),
+                employee.getSalary()
+        );
     }
 }

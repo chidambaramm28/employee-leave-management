@@ -1,7 +1,9 @@
 package com.employee.employee_service.controller;
 
-import com.employee.employee_service.entity.Employee;
+import com.employee.employee_service.dto.EmployeeRequest;
+import com.employee.employee_service.dto.EmployeeResponse;
 import com.employee.employee_service.service.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,19 +21,16 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public ResponseEntity<Employee> createEmployee(
-            @RequestBody Employee employee) {
-
-        Employee createdEmployee =
-                employeeService.createEmployee(employee);
+    public ResponseEntity<EmployeeResponse> createEmployee(
+            @Valid @RequestBody EmployeeRequest request) {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(createdEmployee);
+                .body(employeeService.createEmployee(request));
     }
 
     @GetMapping
-    public ResponseEntity<List<Employee>> getAllEmployees() {
+    public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {
 
         return ResponseEntity.ok(
                 employeeService.getAllEmployees()
@@ -39,7 +38,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Employee> getEmployeeById(
+    public ResponseEntity<EmployeeResponse> getEmployeeById(
             @PathVariable Long id) {
 
         return ResponseEntity.ok(
@@ -48,12 +47,12 @@ public class EmployeeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Employee> updateEmployee(
+    public ResponseEntity<EmployeeResponse> updateEmployee(
             @PathVariable Long id,
-            @RequestBody Employee employee) {
+            @Valid @RequestBody EmployeeRequest request) {
 
         return ResponseEntity.ok(
-                employeeService.updateEmployee(id, employee)
+                employeeService.updateEmployee(id, request)
         );
     }
 
